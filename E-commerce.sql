@@ -67,43 +67,6 @@ step 1: purchaser: totals.transactions >=1; productRevenue is not null.
 step 2: non-purchaser: totals.transactions IS NULL;  product.productRevenue is null 
 step 3: Avg pageview = total pageview / number unique user. */
 
- 
-WITH non_purchaser as (
-    SELECT
-        FORMAT_DATE("%Y%m",PARSE_DATE('%Y%m%d',date)) as month,
-        ROUND(sum(totals.pageviews)/count(distinct fullVisitorId),8) as avg_pageviews_non_purchaser
-    FROM `bigquery-public-data.google_analytics_sample.ga_sessions_*`, 
-        unnest(hits) hits,
-        unnest(product) product
-    Where 
-        _table_suffix between '20170601' and '20170731'
-        AND totals.transactions IS NULL
-        and product.productRevenue is null
-    GROUP BY month
-)
-, purchaser as (
-    SELECT
-        FORMAT_DATE("%Y%m",PARSE_DATE('%Y%m%d',date)) as month,
-        ROUND(sum(totals.pageviews)/count(distinct fullVisitorId),8) as avg_pageviews_purchaser
-    FROM `bigquery-public-data.google_analytics_sample.ga_sessions_*`,
-        unnest(hits) hits,
-        unnest(product) product
-    Where 
-        _table_suffix between '20170601' and '20170731'
-        AND totals.transactions >= 1
-        and productRevenue is not null
-    GROUP BY month
-)
-
-SELECT
-    non_purchaser.month,
-    purchaser.avg_pageviews_purchaser,
-    non_purchaser.avg_pageviews_non_purchaser
-FROM non_purchaser
-JOIN purchaser USING(month) 
-ORDER BY month
-
--->
 with 
 purchaser_data as(
   select
@@ -183,54 +146,6 @@ group by month
   , UNNEST(hits.product) as product to get v2ProductName."
 step 2: Add condition "product.productRevenue is not null" to calculate correctly
 step 3: Using productQuantity to calculate quantity. */
-
-with product as(
-    select
-        fullVisitorId,
-        product.v2ProductName,
-        product.productRevenue,
-        product.productQuantity 
-    from `bigquery-public-data.google_analytics_sample.ga_sessions_*`,
-        unnest(hits) as hits,
-        unnest(hits.product) as product
-    where
-        _table_suffix between '20170701' and '20170731'
-        and product.productRevenue is not null
-)
-
-select
-    product.v2ProductName as other_purchased_products,
-    sum(product.productQuantity) as quantity
-from product
-where
-    product.fullVisitorId in (
-        select fullVisitorId
-        from product
-        where product.v2ProductName = "YouTube Men's Vintage Henley"
-    )
-    and product.v2ProductName <> "YouTube Men's Vintage Henley"
-group by other_purchased_products
-order by quantity desc
-
-
-select
-    product.v2productname as other_purchased_product,
-    sum(product.productQuantity) as quantity
-from `bigquery-public-data.google_analytics_sample.ga_sessions_201707*`,
-    unnest(hits) as hits,
-    unnest(hits.product) as product
-where fullvisitorid in (select distinct fullvisitorid
-                        from `bigquery-public-data.google_analytics_sample.ga_sessions_201707*`,
-                        unnest(hits) as hits,
-                        unnest(hits.product) as product
-                        where product.v2productname = "YouTube Men's Vintage Henley"
-                        and product.productRevenue is not null)
-and product.v2productname != "YouTube Men's Vintage Henley"
-and product.productRevenue is not null
-group by other_purchased_product
-order by quantity desc;
-
---CTE:
 
 with buyer_list as(
     SELECT
@@ -317,8 +232,8 @@ select
   round((num_add_to_cart/num_product_view)*100,2) as add_to_cart_rate,
   round((num_purchase/num_product_view)*100,2) as purchase_rate
 from product_view
-join add_to_cart using(month)  --> left join
-join purchase using(month)     --> left join
+left join add_to_cart using(month)  --> left join
+left join purchase using(month)     --> left join
 order by month
 
 
