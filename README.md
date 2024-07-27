@@ -17,7 +17,7 @@ In this project, I will write eight queries in BigQuery based on the Google Anal
 
 ![image](https://github.com/user-attachments/assets/5178b4fd-f6d9-407d-befc-3187f90dd663)
 * query result
-* 
+
 ![image](https://github.com/user-attachments/assets/1e7191c5-9dce-4f14-8bea-1a287f6d2b0d)
 
 ### Query 2: Bounce rate per traffic source in July 2017
