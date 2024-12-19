@@ -11,7 +11,7 @@ Here’s how you can access the eCommerce dataset on Google BigQuery:
 * Click on the “ga_sessions_” table.
 
 ## III. Exploring the Dataset
-In this project, I will write eight queries in BigQuery based on the Google Analytics dataset. 
+In this project, I write eight queries in BigQuery based on the Google Analytics dataset. 
 ### Query 1: Total visit, pageview, transaction for Jan, Feb and March 2017 (order by month)
 * SQL code
 
